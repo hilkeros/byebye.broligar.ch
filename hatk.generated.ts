@@ -1,5 +1,5 @@
 // Auto-generated from lexicons. Do not edit.
-import type { LexProcedure, LexQuery, LexServerParams, Checked, Prettify, StrictArg } from '@hatk/hatk/lex-types'
+import type { LexDef, LexProcedure, LexQuery, LexRecord, LexServerParams, Checked, Prettify, StrictArg } from '@hatk/hatk/lex-types'
 import type { XrpcContext } from '@hatk/hatk/xrpc'
 import { callXrpc as _callXrpc } from '@hatk/hatk/xrpc'
 import { defineFeed as _defineFeed, type FeedResult, type FeedContext, type BaseContext, type Row } from '@hatk/hatk/feeds'
@@ -7,11 +7,13 @@ import { seed as _seed, type SeedOpts } from '@hatk/hatk/seed'
 
 // ─── Lexicon Definitions ────────────────────────────────────────────
 
+const eventLex = {"lexicon":1,"id":"community.lexicon.calendar.event","defs":{"main":{"type":"record","description":"A calendar event.","key":"tid","record":{"type":"object","required":["createdAt","name"],"properties":{"name":{"type":"string","description":"The name of the event."},"description":{"type":"string","description":"The description of the event."},"createdAt":{"type":"string","format":"datetime","description":"Client-declared timestamp when the event was created."},"startsAt":{"type":"string","format":"datetime","description":"Client-declared timestamp when the event starts."},"endsAt":{"type":"string","format":"datetime","description":"Client-declared timestamp when the event ends."},"mode":{"type":"ref","ref":"community.lexicon.calendar.event#mode","description":"The attendance mode of the event."},"status":{"type":"ref","ref":"community.lexicon.calendar.event#status","description":"The status of the event."},"locations":{"type":"array","description":"The locations where the event takes place.","items":{"type":"union","refs":["community.lexicon.calendar.event#uri","community.lexicon.location.address","community.lexicon.location.fsq","community.lexicon.location.geo","community.lexicon.location.hthree"]}},"uris":{"type":"array","description":"URIs associated with the event.","items":{"type":"ref","ref":"community.lexicon.calendar.event#uri"}},"rsvpExpected":{"type":"boolean","description":"Whether a response is requested from attendees."}}}},"mode":{"type":"string","description":"The mode of the event.","default":"community.lexicon.calendar.event#inperson","knownValues":["community.lexicon.calendar.event#hybrid","community.lexicon.calendar.event#inperson","community.lexicon.calendar.event#virtual"]},"virtual":{"type":"token","description":"A virtual event that takes place online."},"inperson":{"type":"token","description":"An in-person event that takes place offline."},"hybrid":{"type":"token","description":"A hybrid event that takes place both online and offline."},"status":{"type":"string","description":"The status of the event.","default":"community.lexicon.calendar.event#scheduled","knownValues":["community.lexicon.calendar.event#cancelled","community.lexicon.calendar.event#planned","community.lexicon.calendar.event#postponed","community.lexicon.calendar.event#rescheduled","community.lexicon.calendar.event#scheduled"]},"planned":{"type":"token","description":"The event has been created, but not finalized."},"scheduled":{"type":"token","description":"The event has been created and scheduled."},"rescheduled":{"type":"token","description":"The event has been rescheduled."},"cancelled":{"type":"token","description":"The event has been cancelled."},"postponed":{"type":"token","description":"The event has been postponed and a new start date has not been set."},"uri":{"type":"object","description":"A URI associated with the event.","required":["uri"],"properties":{"uri":{"type":"string","format":"uri"},"name":{"type":"string","description":"The display name of the URI."}}}}} as const
 const createRecordLex = {"lexicon":1,"id":"dev.hatk.createRecord","defs":{"main":{"type":"procedure","description":"Create a record via the user's PDS.","input":{"encoding":"application/json","schema":{"type":"object","required":["collection","repo","record"],"properties":{"collection":{"type":"string"},"repo":{"type":"string","format":"did"},"record":{"type":"unknown"}}}},"output":{"encoding":"application/json","schema":{"type":"object","properties":{"uri":{"type":"string","format":"at-uri"},"cid":{"type":"string","format":"cid"}}}}}}} as const
+const createReportLex = {"lexicon":1,"id":"dev.hatk.createReport","defs":{"main":{"type":"procedure","description":"Report an account or record for moderation review.","input":{"encoding":"application/json","schema":{"type":"object","required":["subject","label"],"properties":{"subject":{"type":"union","description":"The account or record being reported.","refs":["#repoRef","com.atproto.repo.strongRef"]},"label":{"type":"string","description":"Label identifier for the report reason."},"reason":{"type":"string","maxLength":2000,"description":"Optional free-text explanation."}}}},"output":{"encoding":"application/json","schema":{"type":"object","required":["id","subject","label","reportedBy","createdAt"],"properties":{"id":{"type":"integer"},"subject":{"type":"unknown"},"label":{"type":"string"},"reason":{"type":"string"},"reportedBy":{"type":"string","format":"did"},"createdAt":{"type":"string","format":"datetime"}}}}},"repoRef":{"type":"object","required":["did"],"properties":{"did":{"type":"string","format":"did"}}}}} as const
 const deleteRecordLex = {"lexicon":1,"id":"dev.hatk.deleteRecord","defs":{"main":{"type":"procedure","description":"Delete a record via the user's PDS.","input":{"encoding":"application/json","schema":{"type":"object","required":["collection","rkey"],"properties":{"collection":{"type":"string"},"rkey":{"type":"string"}}}},"output":{"encoding":"application/json","schema":{"type":"object","properties":{}}}}}} as const
 const describeCollectionsLex = {"lexicon":1,"id":"dev.hatk.describeCollections","defs":{"main":{"type":"query","description":"List indexed collections and their schemas.","output":{"encoding":"application/json","schema":{"type":"object","properties":{"collections":{"type":"array","items":{"type":"object","required":["collection"],"properties":{"collection":{"type":"string"},"columns":{"type":"array","items":{"type":"object","required":["name","originalName","type","required"],"properties":{"name":{"type":"string"},"originalName":{"type":"string"},"type":{"type":"string"},"required":{"type":"boolean"}}}}}}}}}}}}} as const
 const describeFeedsLex = {"lexicon":1,"id":"dev.hatk.describeFeeds","defs":{"main":{"type":"query","description":"List available feeds.","output":{"encoding":"application/json","schema":{"type":"object","properties":{"feeds":{"type":"array","items":{"type":"object","required":["name","label"],"properties":{"name":{"type":"string"},"label":{"type":"string"}}}}}}}}}} as const
-const describeLabelsLex = {"lexicon":1,"id":"dev.hatk.describeLabels","defs":{"main":{"type":"query","description":"List available label definitions.","output":{"encoding":"application/json","schema":{"type":"object","properties":{"definitions":{"type":"array","items":{"type":"object","required":["identifier","severity","blurs","defaultSetting"],"properties":{"identifier":{"type":"string"},"severity":{"type":"string"},"blurs":{"type":"string"},"defaultSetting":{"type":"string"}}}}}}}}}} as const
+const describeLabelsLex = {"lexicon":1,"id":"dev.hatk.describeLabels","defs":{"main":{"type":"query","description":"List available label definitions.","output":{"encoding":"application/json","schema":{"type":"object","properties":{"definitions":{"type":"array","items":{"type":"ref","ref":"#labelDefinition"}}}}}},"labelDefinition":{"type":"object","required":["identifier","severity","blurs","defaultSetting"],"properties":{"identifier":{"type":"string"},"severity":{"type":"string"},"blurs":{"type":"string"},"defaultSetting":{"type":"string"},"locales":{"type":"array","items":{"type":"ref","ref":"#labelLocale"}}}},"labelLocale":{"type":"object","required":["lang","name","description"],"properties":{"lang":{"type":"string"},"name":{"type":"string"},"description":{"type":"string"}}}}} as const
 const getFeedLex = {"lexicon":1,"id":"dev.hatk.getFeed","defs":{"main":{"type":"query","description":"Retrieve a named feed of items.","parameters":{"type":"params","required":["feed"],"properties":{"feed":{"type":"string","description":"Feed name"},"limit":{"type":"integer","minimum":1,"maximum":100,"default":30},"cursor":{"type":"string"}}},"output":{"encoding":"application/json","schema":{"type":"object","required":["items"],"properties":{"items":{"type":"array","items":{"type":"unknown"}},"cursor":{"type":"string"}}}}}}} as const
 const getRecordLex = {"lexicon":1,"id":"dev.hatk.getRecord","defs":{"main":{"type":"query","description":"Fetch a single record by AT URI.","parameters":{"type":"params","required":["uri"],"properties":{"uri":{"type":"string","format":"at-uri"}}},"output":{"encoding":"application/json","schema":{"type":"object","properties":{"record":{"type":"unknown"}}}}}}} as const
 const getRecordsLex = {"lexicon":1,"id":"dev.hatk.getRecords","defs":{"main":{"type":"query","description":"List records from a collection with optional filters.","parameters":{"type":"params","required":["collection"],"properties":{"collection":{"type":"string"},"limit":{"type":"integer","minimum":1,"maximum":100,"default":20},"cursor":{"type":"string"},"sort":{"type":"string"},"order":{"type":"string"}}},"output":{"encoding":"application/json","schema":{"type":"object","required":["items"],"properties":{"items":{"type":"array","items":{"type":"unknown"}},"cursor":{"type":"string"}}}}}}} as const
@@ -22,7 +24,9 @@ const uploadBlobLex = {"lexicon":1,"id":"dev.hatk.uploadBlob","defs":{"main":{"t
 // ─── Type Registry ──────────────────────────────────────────────────
 
 type Registry = {
+  'community.lexicon.calendar.event': typeof eventLex
   'dev.hatk.createRecord': typeof createRecordLex
+  'dev.hatk.createReport': typeof createReportLex
   'dev.hatk.deleteRecord': typeof deleteRecordLex
   'dev.hatk.describeCollections': typeof describeCollectionsLex
   'dev.hatk.describeFeeds': typeof describeFeedsLex
@@ -37,6 +41,8 @@ type Registry = {
 
 // ─── Record & Method Types ──────────────────────────────────────────
 
+export type Event = Prettify<LexRecord<typeof eventLex, Registry>>
+export type CreateReport = Prettify<LexProcedure<typeof createReportLex, Registry>>
 export type DescribeCollections = Prettify<LexQuery<typeof describeCollectionsLex, Registry>>
 export type DescribeFeeds = Prettify<LexQuery<typeof describeFeedsLex, Registry>>
 export type DescribeLabels = Prettify<LexQuery<typeof describeLabelsLex, Registry>>
@@ -46,19 +52,40 @@ export type GetRecords = Prettify<LexQuery<typeof getRecordsLex, Registry>>
 export type SearchRecords = Prettify<LexQuery<typeof searchRecordsLex, Registry>>
 export type UploadBlob = Prettify<LexProcedure<typeof uploadBlobLex, Registry>>
 
-export type RecordRegistry = {}
+export type RecordRegistry = {
+  'community.lexicon.calendar.event': Event
+}
 
-export type CreateRecord = LexProcedure<typeof createRecordLex, Registry>
-export type DeleteRecord = LexProcedure<typeof deleteRecordLex, Registry>
-export type PutRecord = LexProcedure<typeof putRecordLex, Registry>
+export type CreateRecord = {
+  params: {}
+  input: { [K in keyof RecordRegistry]: { collection: K; record: RecordRegistry[K]; repo?: string } }[keyof RecordRegistry]
+  output: { uri?: string; cid?: string }
+}
+
+export type DeleteRecord = {
+  params: {}
+  input: { [K in keyof RecordRegistry]: { collection: K; rkey: string } }[keyof RecordRegistry]
+  output: {}
+}
+
+export type PutRecord = {
+  params: {}
+  input: { [K in keyof RecordRegistry]: { collection: K; rkey: string; record: RecordRegistry[K]; repo?: string } }[keyof RecordRegistry]
+  output: { uri?: string; cid?: string }
+}
 
 // ─── Named Defs (Views, Objects) ────────────────────────────────────
 
+export type Uri = Prettify<LexDef<typeof eventLex, 'uri', Registry>>
+export type RepoRef = Prettify<LexDef<typeof createReportLex, 'repoRef', Registry>>
+export type LabelDefinition = Prettify<LexDef<typeof describeLabelsLex, 'labelDefinition', Registry>>
+export type LabelLocale = Prettify<LexDef<typeof describeLabelsLex, 'labelLocale', Registry>>
 
 // ─── XRPC Schema ────────────────────────────────────────────────────
 
 export type XrpcSchema = {
   'dev.hatk.createRecord': CreateRecord
+  'dev.hatk.createReport': CreateReport
   'dev.hatk.deleteRecord': DeleteRecord
   'dev.hatk.describeCollections': DescribeCollections
   'dev.hatk.describeFeeds': DescribeFeeds

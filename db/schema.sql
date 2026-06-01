@@ -114,3 +114,20 @@ CREATE TABLE _repos (
   retry_count INTEGER NOT NULL DEFAULT 0,
   retry_after INTEGER NOT NULL DEFAULT 0
 );
+
+CREATE TABLE "community.lexicon.calendar.event" (
+  uri TEXT PRIMARY KEY,
+  cid TEXT,
+  did TEXT NOT NULL,
+  indexed_at TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  created_at TEXT NOT NULL,
+  starts_at TEXT,
+  ends_at TEXT,
+  mode TEXT,
+  status TEXT,
+  locations TEXT,
+  uris TEXT,
+  rsvp_expected INTEGER
+);
