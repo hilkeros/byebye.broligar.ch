@@ -3,13 +3,14 @@
   import { goto } from '$app/navigation'
 
   let { data } = $props()
+  const ev = data.event
 
-  let name = $state('')
-  let description = $state('')
-  let startsAt = $state('')
-  let endsAt = $state('')
-  let mode = $state('community.lexicon.calendar.event#inperson')
-  let status = $state('community.lexicon.calendar.event#scheduled')
+  let name = $state(ev.name ?? '')
+  let description = $state(ev.description ?? '')
+  let startsAt = $state(ev.startsAt ? toLocalDatetime(ev.startsAt) : '')
+  let endsAt = $state(ev.endsAt ? toLocalDatetime(ev.endsAt) : '')
+  let mode = $state(ev.mode ?? 'community.lexicon.calendar.event#inperson')
+  let status = $state(ev.status ?? 'community.lexicon.calendar.event#scheduled')
   let loading = $state(false)
   let error = $state('')
 
@@ -22,12 +23,23 @@
     country: string
     name?: string
   }
-  let locationQuery = $state('')
+
+  const loc = ev.locations?.[0]
+  const existingLocation: Address | null = loc?.country
+    ? { ...loc, $type: 'community.lexicon.location.address' as const }
+    : null
+
+  let locationQuery = $state(existingLocation?.name ?? '')
   let locationResults: any[] = $state([])
   let locationSearching = $state(false)
   let showDropdown = $state(false)
-  let selectedLocation: Address | null = $state(null)
+  let selectedLocation: Address | null = $state(existingLocation)
   let searchTimeout: ReturnType<typeof setTimeout> | null = null
+
+  function toLocalDatetime(iso: string) {
+    const d = new Date(iso)
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
+  }
 
   async function searchLocation() {
     if (searchTimeout) clearTimeout(searchTimeout)
@@ -57,7 +69,7 @@
     const region = addr.state ?? addr.county ?? ''
     const country = (addr.country_code ?? '').toUpperCase()
 
-    if (!country) return // country is required by the lexicon
+    if (!country) return
     const venueName = addr.name ?? ''
     selectedLocation = {
       $type: 'community.lexicon.location.address',
@@ -83,9 +95,9 @@
     error = ''
 
     try {
-      await callXrpc('dev.hatk.createRecord', {
+      await callXrpc('dev.hatk.putRecord', {
         collection: 'community.lexicon.calendar.event',
-        repo: data.viewer!.did,
+        rkey: data.rkey,
         record: {
           name: name.trim(),
           ...(description.trim() ? { description: description.trim() } : {}),
@@ -94,7 +106,7 @@
           mode,
           status,
           ...(selectedLocation ? { locations: [selectedLocation] } : {}),
-          createdAt: new Date().toISOString(),
+          createdAt: ev.createdAt,
         },
       })
       await goto('/')
@@ -107,7 +119,7 @@
 
 <main>
   <a href="/" class="back-link">← Back</a>
-  <h1>Create event</h1>
+  <h1>Edit event</h1>
 
   <div class="form">
     <label>
@@ -140,7 +152,6 @@
           oninput={searchLocation}
           onblur={() => setTimeout(() => (showDropdown = false), 150)}
           placeholder="Search for a place…"
-          class:has-selection={!!selectedLocation}
         />
         {#if locationSearching}
           <span class="location-spinner">…</span>
@@ -152,10 +163,7 @@
           <ul class="location-dropdown">
             {#each locationResults as result (result.place_id)}
               <li>
-                <button
-                  type="button"
-                  onmousedown={() => pickLocation(result)}
-                >
+                <button type="button" onmousedown={() => pickLocation(result)}>
                   {result.display_name}
                 </button>
               </li>
@@ -179,6 +187,9 @@
         <select bind:value={status}>
           <option value="community.lexicon.calendar.event#scheduled">Scheduled</option>
           <option value="community.lexicon.calendar.event#planned">Planned</option>
+          <option value="community.lexicon.calendar.event#cancelled">Cancelled</option>
+          <option value="community.lexicon.calendar.event#postponed">Postponed</option>
+          <option value="community.lexicon.calendar.event#rescheduled">Rescheduled</option>
         </select>
       </label>
     </div>
@@ -188,7 +199,7 @@
     {/if}
 
     <button class="primary" onclick={handleSubmit} disabled={loading || !name.trim()}>
-      {loading ? 'Creating…' : 'Create event'}
+      {loading ? 'Saving…' : 'Save changes'}
     </button>
   </div>
 </main>
@@ -230,9 +241,7 @@
     font-weight: 500;
   }
 
-  .required {
-    color: #dc2626;
-  }
+  .required { color: #dc2626; }
 
   .row {
     display: grid;
@@ -240,7 +249,6 @@
     gap: 1rem;
   }
 
-  /* Location */
   .location-field {
     display: flex;
     flex-direction: column;
@@ -280,10 +288,7 @@
     border-radius: 4px;
   }
 
-  .clear-btn:hover {
-    color: var(--text);
-    background: var(--surface);
-  }
+  .clear-btn:hover { color: var(--text); background: var(--surface); }
 
   .location-dropdown {
     position: absolute;
@@ -314,13 +319,8 @@
     text-overflow: ellipsis;
   }
 
-  .location-dropdown li button:hover {
-    background: var(--surface);
-  }
-
-  .location-dropdown li + li {
-    border-top: 1px solid var(--border);
-  }
+  .location-dropdown li button:hover { background: var(--surface); }
+  .location-dropdown li + li { border-top: 1px solid var(--border); }
 
   .form-error {
     font-size: 0.875rem;

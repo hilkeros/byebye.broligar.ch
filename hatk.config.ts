@@ -15,14 +15,14 @@ export default defineConfig({
   },
   oauth: {
     issuer: isProd && prodDomain ? `https://${prodDomain}` : undefined,
-    scopes: ["atproto", "repo:community.lexicon.calendar.event?action=create&action=delete"],
+    scopes: ["atproto", "repo:community.lexicon.calendar.event"],
     clients: [
       ...(prodDomain
         ? [
             {
               client_id: `https://${prodDomain}/oauth-client-metadata.json`,
               client_name: "my-hatk-app",
-              scope: "atproto repo:community.lexicon.calendar.event?action=create&action=delete",
+              scope: "atproto repo:community.lexicon.calendar.event",
               redirect_uris: [
                 `https://${prodDomain}/oauth/callback`,
                 `https://${prodDomain}/admin`,
@@ -33,7 +33,7 @@ export default defineConfig({
       {
         client_id: "http://127.0.0.1:3000/oauth-client-metadata.json",
         client_name: "my-hatk-app",
-        scope: "atproto repo:community.lexicon.calendar.event?action=create&action=delete",
+        scope: "atproto repo:community.lexicon.calendar.event",
         redirect_uris: ["http://127.0.0.1:3000/oauth/callback"],
       },
     ],

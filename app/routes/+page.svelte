@@ -1,11 +1,29 @@
 <script lang="ts">
-  import { login, logout } from '$hatk/client'
+  import { login, logout, callXrpc } from '$hatk/client'
   import { invalidateAll } from '$app/navigation'
 
   let { data } = $props()
   let handle = $state('')
   let loading = $state(false)
   let error = $state('')
+  let confirmingDelete = $state<string | null>(null)
+
+  function rkey(uri: string) {
+    return uri.split('/').pop()!
+  }
+
+  async function deleteEvent(uri: string) {
+    try {
+      await callXrpc('dev.hatk.deleteRecord', {
+        collection: 'community.lexicon.calendar.event',
+        rkey: rkey(uri),
+      })
+      confirmingDelete = null
+      await invalidateAll()
+    } catch (e: any) {
+      error = e.message
+    }
+  }
 
   const viewer = $derived(data.viewer)
   const events = $derived(data.events ?? [])
@@ -28,12 +46,33 @@
     await invalidateAll()
   }
 
-  function formatDate(iso: string | undefined) {
-    if (!iso) return null
-    return new Date(iso).toLocaleString(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    })
+  function locationInfo(locations: any[] | undefined): { label: string; url: string } | null {
+    if (!locations?.length) return null
+    const loc = locations[0]
+    // loc.name is a short venue name in new records, but old records stored
+    // the full Nominatim display_name (many commas) — skip those
+    const venueName = loc.name && (loc.name.match(/,/g)?.length ?? 0) <= 2 ? loc.name : ''
+    const label = [venueName, loc.street, loc.locality, loc.country]
+      .filter(Boolean)
+      .join(', ')
+    if (!label) return null
+    return {
+      label,
+      url: `https://maps.google.com/?q=${encodeURIComponent(label)}`,
+    }
+  }
+
+  function formatDateRange(start: string | undefined, end: string | undefined): string | null {
+    if (!start) return null
+    const s = new Date(start)
+    const startStr = s.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+    if (!end) return startStr
+    const e = new Date(end)
+    const sameDay = s.toDateString() === e.toDateString()
+    const endStr = sameDay
+      ? e.toLocaleTimeString(undefined, { timeStyle: 'short' })
+      : e.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+    return `${startStr} – ${endStr}`
   }
 
   const STATUS_LABELS: Record<string, string> = {
@@ -88,12 +127,24 @@
             {#if ev.description}
               <p class="event-description">{ev.description}</p>
             {/if}
-            <div class="event-dates">
+            <div class="event-meta">
               {#if ev.startsAt}
-                <span>Starts {formatDate(ev.startsAt)}</span>
+                <span>{formatDateRange(ev.startsAt, ev.endsAt)}</span>
               {/if}
-              {#if ev.endsAt}
-                <span>· Ends {formatDate(ev.endsAt)}</span>
+              {#if locationInfo(ev.locations)}
+                {@const loc = locationInfo(ev.locations)!}
+                <a class="event-location" href={loc.url} target="_blank" rel="noopener noreferrer">
+                  📍 {loc.label}
+                </a>
+              {/if}
+            </div>
+            <div class="event-actions">
+              <a href="/events/{rkey(item.uri)}"><button>Edit</button></a>
+              {#if confirmingDelete === item.uri}
+                <button class="danger" onclick={() => deleteEvent(item.uri)}>Confirm delete</button>
+                <button onclick={() => confirmingDelete = null}>Cancel</button>
+              {:else}
+                <button onclick={() => confirmingDelete = item.uri}>Delete</button>
               {/if}
             </div>
           </li>
@@ -218,10 +269,47 @@
     line-height: 1.5;
   }
 
-  .event-dates {
+  .event-meta {
     margin-top: 0.625rem;
     font-size: 0.8125rem;
     color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+  }
+
+  .event-location {
+    color: var(--muted);
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  .event-location:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .event-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.875rem;
+  }
+
+  .event-actions button {
+    font-size: 0.8125rem;
+    padding: 0.3rem 0.75rem;
+  }
+
+  button.danger {
+    color: #dc2626;
+    border-color: #fca5a5;
+  }
+
+  button.danger:hover:not(:disabled) {
+    background: #fef2f2;
   }
 
   .login-box {
