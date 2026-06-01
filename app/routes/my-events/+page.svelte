@@ -1,6 +1,28 @@
 <script lang="ts">
+  import { callXrpc } from '$hatk/client'
+  import { invalidateAll } from '$app/navigation'
+
   let { data } = $props()
   const events = $derived(data.events ?? [])
+  let confirmingDelete = $state<string | null>(null)
+  let error = $state('')
+
+  function rkey(uri: string) {
+    return uri.split('/').pop()!
+  }
+
+  async function deleteEvent(uri: string) {
+    try {
+      await callXrpc('dev.hatk.deleteRecord', {
+        collection: 'community.lexicon.calendar.event',
+        rkey: rkey(uri),
+      })
+      confirmingDelete = null
+      await invalidateAll()
+    } catch (e: any) {
+      error = e.message
+    }
+  }
 
   function locationInfo(locations: any[] | undefined): { label: string; url: string } | null {
     if (!locations?.length) return null
@@ -45,8 +67,17 @@
 </script>
 
 <main>
+  <div class="toolbar">
+    <h1>My events</h1>
+    <a href="/events/new"><button class="primary">+ Create event</button></a>
+  </div>
+
+  {#if error}
+    <p class="form-error">{error}</p>
+  {/if}
+
   {#if events.length === 0}
-    <p class="empty">No upcoming events.</p>
+    <p class="empty">You haven't created any events yet.</p>
   {:else}
     <ul class="event-list">
       {#each events as item (item.uri)}
@@ -77,6 +108,15 @@
               </a>
             {/if}
           </div>
+          <div class="event-actions">
+            <a href="/events/{rkey(item.uri)}"><button>Edit</button></a>
+            {#if confirmingDelete === item.uri}
+              <button class="danger" onclick={() => deleteEvent(item.uri)}>Confirm delete</button>
+              <button onclick={() => confirmingDelete = null}>Cancel</button>
+            {:else}
+              <button onclick={() => confirmingDelete = item.uri}>Delete</button>
+            {/if}
+          </div>
         </li>
       {/each}
     </ul>
@@ -90,11 +130,26 @@
     padding: 2.5rem 1.5rem;
   }
 
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.75rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
   .empty {
     color: var(--muted);
     font-size: 0.9375rem;
-    padding: 3rem 0;
+    padding: 2rem 0;
     text-align: center;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
   }
 
   .event-list {
@@ -172,5 +227,31 @@
   .event-location:hover {
     color: var(--accent);
     text-decoration: underline;
+  }
+
+  .event-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.875rem;
+  }
+
+  .event-actions button {
+    font-size: 0.8125rem;
+    padding: 0.3rem 0.75rem;
+  }
+
+  button.danger {
+    color: #dc2626;
+    border-color: #fca5a5;
+  }
+
+  button.danger:hover:not(:disabled) {
+    background: #fef2f2;
+  }
+
+  .form-error {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: #dc2626;
   }
 </style>

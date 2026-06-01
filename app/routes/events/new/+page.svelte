@@ -97,7 +97,7 @@
           createdAt: new Date().toISOString(),
         },
       })
-      await goto('/')
+      await goto('/my-events')
     } catch (e: any) {
       error = e.message
       loading = false

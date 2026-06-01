@@ -1,10 +1,10 @@
 import { callXrpc } from '$hatk'
+import { redirect } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
-import { env } from '$env/dynamic/private'
 
-export const load: PageServerLoad = async () => {
-  const adminDid = env.ADMIN_DID
-  if (!adminDid) return { events: [] }
+export const load: PageServerLoad = async ({ parent }) => {
+  const { viewer } = await parent()
+  if (!viewer) throw redirect(302, '/')
 
   const result = await callXrpc('dev.hatk.getRecords', {
     collection: 'community.lexicon.calendar.event',
@@ -12,7 +12,7 @@ export const load: PageServerLoad = async () => {
   })
 
   const events = (result.items as any[]).filter((item: any) =>
-    item.uri?.startsWith(`at://${adminDid}/`)
+    item.uri?.startsWith(`at://${viewer.did}/`)
   )
 
   return { events }
