@@ -32,6 +32,7 @@
 
 <nav>
   <a href="/" class="site-title">bye bye broligarch</a>
+  <img src="/broli_gocarts.png" alt="Broli go-karts" class="nav-logo" />
   <div class="nav-right">
     {#if viewer}
       <a href="/my-events" class="nav-link">My events</a>
@@ -71,6 +72,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 0.875rem 1.5rem;
+    min-height: 89px;
     border-bottom: 1px solid var(--border);
     background: var(--bg);
     position: sticky;
@@ -79,15 +81,23 @@
   }
 
   .site-title {
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    letter-spacing: 0.02em;
     color: var(--text);
     text-decoration: none;
   }
 
   .site-title:hover {
     color: var(--accent);
+  }
+
+  .nav-logo {
+    width: 200px;
+    height: 89px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
   }
 
   .nav-right {
