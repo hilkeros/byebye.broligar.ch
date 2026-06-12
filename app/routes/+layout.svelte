@@ -10,6 +10,7 @@
   let loading = $state(false)
   let error = $state('')
   let showLogin = $state(false)
+  let showMenu = $state(false)
 
   async function handleLogin() {
     if (!handle.trim()) return
@@ -27,6 +28,7 @@
   async function handleLogout() {
     await logout()
     await invalidateAll()
+    showMenu = false
   }
 </script>
 
@@ -35,14 +37,25 @@
   <img src="/broli_gocarts.png" alt="Broli go-karts" class="nav-logo" />
   <div class="nav-right">
     {#if viewer}
-      <a href="/my-events" class="nav-link">My events</a>
-      <span class="viewer-handle">@{viewer.handle}</span>
-      <button onclick={handleLogout}>Sign out</button>
+      <a href="/my-events" class="nav-link desktop-only">My events</a>
+      <span class="viewer-handle desktop-only">@{viewer.handle}</span>
+      <button class="desktop-only" onclick={handleLogout}>Sign out</button>
+      <button class="hamburger mobile-only" onclick={() => showMenu = !showMenu} aria-label="Menu">
+        {showMenu ? '✕' : '☰'}
+      </button>
     {:else}
       <button onclick={() => showLogin = !showLogin}>Sign in</button>
     {/if}
   </div>
+  {#if showMenu && viewer}
+    <div class="mobile-menu">
+      <a href="/my-events" class="mobile-menu-link" onclick={() => showMenu = false}>My events</a>
+      <span class="mobile-menu-handle">@{viewer.handle}</span>
+      <button onclick={handleLogout}>Sign out</button>
+    </div>
+  {/if}
 </nav>
+
 
 {#if showLogin && !viewer}
   <div class="login-bar">
@@ -51,7 +64,6 @@
         type="text"
         bind:value={handle}
         placeholder="your.handle"
-
       />
       <button type="submit" class="primary" disabled={loading}>
         {loading ? 'Signing in…' : 'Sign in'}
@@ -121,6 +133,39 @@
     color: var(--muted);
   }
 
+  .hamburger {
+    font-size: 1.25rem;
+    padding: 0.4rem 0.7rem;
+    line-height: 1;
+  }
+
+  .mobile-menu {
+    display: none;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .mobile-menu-link {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .mobile-menu-handle {
+    font-size: 0.875rem;
+    color: var(--muted);
+  }
+
   .login-bar {
     padding: 0.75rem 1.5rem;
     background: var(--surface);
@@ -143,5 +188,25 @@
     color: #dc2626;
     margin-top: 0.5rem;
     text-align: center;
+  }
+
+  .mobile-only { display: none; }
+  .desktop-only { display: flex; }
+
+  @media (max-width: 600px) {
+    nav {
+      min-height: unset;
+    }
+
+    .nav-logo {
+      position: static;
+      transform: none;
+      width: 120px;
+      height: auto;
+    }
+
+    .mobile-only { display: flex; }
+    .desktop-only { display: none; }
+    .mobile-menu { display: flex; }
   }
 </style>

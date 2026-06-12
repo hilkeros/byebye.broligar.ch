@@ -72,14 +72,14 @@
           <li class="event-card">
             <div class="event-header">
               <strong class="event-name">{ev.name}</strong>
-              <div class="badges">
+              <!-- <div class="badges">
                 {#if ev.mode}
                   <span class="badge">{MODE_LABELS[ev.mode] ?? ev.mode}</span>
                 {/if}
                 {#if ev.status}
                   <span class="badge">{STATUS_LABELS[ev.status] ?? ev.status}</span>
                 {/if}
-              </div>
+              </div> -->
             </div>
             {#if ev.description}
               <p class="event-description">{ev.description}</p>
@@ -110,14 +110,14 @@
           <li class="event-card">
             <div class="event-header">
               <strong class="event-name">{ev.name}</strong>
-              <div class="badges">
+              <!-- <div class="badges">
                 {#if ev.mode}
                   <span class="badge">{MODE_LABELS[ev.mode] ?? ev.mode}</span>
                 {/if}
                 {#if ev.status}
                   <span class="badge">{STATUS_LABELS[ev.status] ?? ev.status}</span>
                 {/if}
-              </div>
+              </div> -->
             </div>
             {#if ev.description}
               <p class="event-description">{ev.description}</p>
