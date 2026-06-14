@@ -103,7 +103,7 @@
       <button type="submit" class="primary" disabled={loading}>
         {loading ? '…' : t('Sign in')}
       </button>
-      <button type="button" onclick={() => { showLogin = false; error = '' }}>{t('Cancel')}</button>
+      <button type="button" class="cancel-link" onclick={() => { showLogin = false; error = '' }}>{t('Cancel')}</button>
     </form>
     {#if error}
       <p class="login-error">{error}</p>
@@ -282,6 +282,7 @@
 
   .login-form {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.5rem;
     max-width: 480px;
     margin: 0 auto;
@@ -289,6 +290,30 @@
 
   .login-form input {
     flex: 1;
+  }
+
+  .cancel-link {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 0.875rem;
+    font-weight: 400;
+    padding: 0;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .cancel-link:hover:not(:disabled) {
+    color: var(--accent);
+    background: none;
+    transform: none;
+  }
+
+  @media (max-width: 600px) {
+    .cancel-link {
+      width: 100%;
+      text-align: right;
+    }
   }
 
   .login-error {
