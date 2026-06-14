@@ -1,6 +1,7 @@
 <script lang="ts">
   import { callXrpc } from '$hatk/client'
   import { goto } from '$app/navigation'
+  import { t } from '$lib/t'
 
   let { data } = $props()
 
@@ -106,40 +107,40 @@
 </script>
 
 <main>
-  <a href="/" class="back-link">← Back</a>
-  <h1>Create event</h1>
+  <a href="/" class="back-link">{t('← Back')}</a>
+  <h1>{t('Create event')}</h1>
 
   <div class="form">
     <label>
-      <span class="label-text">Name <span class="required">*</span></span>
-      <input type="text" bind:value={name} placeholder="Event name" />
+      <span class="label-text">{t('Name')} <span class="required">*</span></span>
+      <input type="text" bind:value={name} placeholder={t('Event name')} />
     </label>
 
     <label>
-      <span class="label-text">Description</span>
-      <textarea bind:value={description} placeholder="What's this event about?" rows="4"></textarea>
+      <span class="label-text">{t('Description')}</span>
+      <textarea bind:value={description} placeholder={t("What's this event about?")} rows="4"></textarea>
     </label>
 
     <div class="row">
       <label>
-        <span class="label-text">Starts at</span>
+        <span class="label-text">{t('Starts at')}</span>
         <input type="datetime-local" bind:value={startsAt} />
       </label>
       <label>
-        <span class="label-text">Ends at</span>
+        <span class="label-text">{t('Ends at')}</span>
         <input type="datetime-local" bind:value={endsAt} />
       </label>
     </div>
 
     <div class="location-field">
-      <span class="label-text">Location</span>
+      <span class="label-text">{t('Location')}</span>
       <div class="location-input-wrap">
         <input
           type="text"
           bind:value={locationQuery}
           oninput={searchLocation}
           onblur={() => setTimeout(() => (showDropdown = false), 150)}
-          placeholder="Search for a place…"
+          placeholder={t('Search for a place…')}
           class:has-selection={!!selectedLocation}
         />
         {#if locationSearching}
@@ -167,18 +168,18 @@
 
     <div class="row">
       <label>
-        <span class="label-text">Mode</span>
+        <span class="label-text">{t('Mode')}</span>
         <select bind:value={mode}>
-          <option value="community.lexicon.calendar.event#inperson">In person</option>
-          <option value="community.lexicon.calendar.event#virtual">Virtual</option>
-          <option value="community.lexicon.calendar.event#hybrid">Hybrid</option>
+          <option value="community.lexicon.calendar.event#inperson">{t('In person')}</option>
+          <option value="community.lexicon.calendar.event#virtual">{t('Virtual')}</option>
+          <option value="community.lexicon.calendar.event#hybrid">{t('Hybrid')}</option>
         </select>
       </label>
       <label>
-        <span class="label-text">Status</span>
+        <span class="label-text">{t('Status')}</span>
         <select bind:value={status}>
-          <option value="community.lexicon.calendar.event#scheduled">Scheduled</option>
-          <option value="community.lexicon.calendar.event#planned">Planned</option>
+          <option value="community.lexicon.calendar.event#scheduled">{t('Scheduled')}</option>
+          <option value="community.lexicon.calendar.event#planned">{t('Planned')}</option>
         </select>
       </label>
     </div>
@@ -188,7 +189,7 @@
     {/if}
 
     <button class="primary" onclick={handleSubmit} disabled={loading || !name.trim()}>
-      {loading ? 'Creating…' : 'Create event'}
+      {loading ? t('Creating…') : t('Create event')}
     </button>
   </div>
 </main>

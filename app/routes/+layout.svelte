@@ -2,9 +2,14 @@
   import '../app.css'
   import { login, logout } from '$hatk/client'
   import { invalidateAll } from '$app/navigation'
+  import { t } from '$lib/t'
+  import { getLang, setLang } from '$lib/lang.svelte'
 
   let { children, data } = $props()
   const viewer = $derived(data.viewer)
+
+  // Keep lang in sync with server-provided value (e.g. on first load)
+  $effect(() => { setLang(data.lang as 'en' | 'de') })
 
   let handle = $state('')
   let loading = $state(false)
@@ -30,6 +35,12 @@
     await invalidateAll()
     showMenu = false
   }
+
+  function switchLang(e: Event) {
+    const next = (e.target as HTMLSelectElement).value as 'en' | 'de'
+    document.cookie = `lang=${next}; path=/; max-age=31536000`
+    setLang(next)
+  }
 </script>
 
 <nav>
@@ -37,38 +48,37 @@
   <img src="/broli_gocarts.png" alt="Broli go-karts" class="nav-logo" />
   <div class="nav-right">
     {#if viewer}
-      <a href="/my-events" class="nav-link desktop-only">My events</a>
+      <a href="/my-events" class="nav-link desktop-only">{t('My events')}</a>
       <span class="viewer-handle desktop-only">@{viewer.handle}</span>
-      <button class="desktop-only" onclick={handleLogout}>Sign out</button>
+      <button class="desktop-only" onclick={handleLogout}>{t('Sign out')}</button>
       <button class="hamburger mobile-only" onclick={() => showMenu = !showMenu} aria-label="Menu">
         {showMenu ? '✕' : '☰'}
       </button>
     {:else}
-      <button onclick={() => showLogin = !showLogin}>Sign in</button>
+      <button onclick={() => showLogin = !showLogin}>{t('Sign in')}</button>
     {/if}
+    <select class="lang-switch" value={getLang()} onchange={switchLang}>
+      <option value="en">EN</option>
+      <option value="de">DE</option>
+    </select>
   </div>
   {#if showMenu && viewer}
     <div class="mobile-menu">
-      <a href="/my-events" class="mobile-menu-link" onclick={() => showMenu = false}>My events</a>
+      <a href="/my-events" class="mobile-menu-link" onclick={() => showMenu = false}>{t('My events')}</a>
       <span class="mobile-menu-handle">@{viewer.handle}</span>
-      <button onclick={handleLogout}>Sign out</button>
+      <button onclick={handleLogout}>{t('Sign out')}</button>
     </div>
   {/if}
 </nav>
 
-
 {#if showLogin && !viewer}
   <div class="login-bar">
     <form onsubmit={(e) => { e.preventDefault(); handleLogin() }} class="login-form">
-      <input
-        type="text"
-        bind:value={handle}
-        placeholder="your.handle"
-      />
+      <input type="text" bind:value={handle} placeholder="your.handle" />
       <button type="submit" class="primary" disabled={loading}>
-        {loading ? 'Signing in…' : 'Sign in'}
+        {loading ? '…' : t('Sign in')}
       </button>
-      <button type="button" onclick={() => { showLogin = false; error = '' }}>Cancel</button>
+      <button type="button" onclick={() => { showLogin = false; error = '' }}>{t('Cancel')}</button>
     </form>
     {#if error}
       <p class="login-error">{error}</p>
@@ -131,6 +141,24 @@
   .viewer-handle {
     font-size: 0.875rem;
     color: var(--muted);
+  }
+
+  .lang-switch {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    font-family: var(--font);
+    color: var(--muted);
+    padding: 0.25rem 0.375rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+    cursor: pointer;
+    width: auto;
+  }
+
+  .lang-switch:hover {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
   .hamburger {

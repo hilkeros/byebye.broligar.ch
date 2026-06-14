@@ -1,4 +1,7 @@
 <script lang="ts">
+  import { t } from '$lib/t'
+  import { getLang } from '$lib/lang.svelte'
+
   let { data } = $props()
   const now = new Date()
   const upcoming = $derived(
@@ -32,40 +35,41 @@
 
   function formatDateRange(start: string | undefined, end: string | undefined): string | null {
     if (!start) return null
+    const locale = getLang()
     const s = new Date(start)
-    const startStr = s.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+    const startStr = s.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
     if (!end) return startStr
     const e = new Date(end)
     const sameDay = s.toDateString() === e.toDateString()
     const endStr = sameDay
-      ? e.toLocaleTimeString(undefined, { timeStyle: 'short' })
-      : e.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+      ? e.toLocaleTimeString(locale, { timeStyle: 'short' })
+      : e.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' })
     return `${startStr} – ${endStr}`
   }
 
-  const STATUS_LABELS: Record<string, string> = {
-    'community.lexicon.calendar.event#scheduled': 'Scheduled',
-    'community.lexicon.calendar.event#planned': 'Planned',
-    'community.lexicon.calendar.event#cancelled': 'Cancelled',
-    'community.lexicon.calendar.event#postponed': 'Postponed',
-    'community.lexicon.calendar.event#rescheduled': 'Rescheduled',
-  }
+  const STATUS_LABELS = $derived<Record<string, string>>({
+    'community.lexicon.calendar.event#scheduled': t('Scheduled'),
+    'community.lexicon.calendar.event#planned': t('Planned'),
+    'community.lexicon.calendar.event#cancelled': t('Cancelled'),
+    'community.lexicon.calendar.event#postponed': t('Postponed'),
+    'community.lexicon.calendar.event#rescheduled': t('Rescheduled'),
+  })
 
-  const MODE_LABELS: Record<string, string> = {
-    'community.lexicon.calendar.event#inperson': 'In person',
-    'community.lexicon.calendar.event#virtual': 'Virtual',
-    'community.lexicon.calendar.event#hybrid': 'Hybrid',
-  }
+  const MODE_LABELS = $derived<Record<string, string>>({
+    'community.lexicon.calendar.event#inperson': t('In person'),
+    'community.lexicon.calendar.event#virtual': t('Virtual'),
+    'community.lexicon.calendar.event#hybrid': t('Hybrid'),
+  })
 </script>
 
 <main>
   {#if upcoming.length === 0 && past.length === 0}
-    <p class="empty">No events yet.</p>
+    <p class="empty">{t('No events yet.')}</p>
   {/if}
 
   {#if upcoming.length > 0}
     <section>
-      <h2 class="section-heading">Upcoming</h2>
+      <h2 class="section-heading">{t('Upcoming')}</h2>
       <ul class="event-list">
         {#each upcoming as item (item.uri)}
           {@const ev = item.value}
@@ -103,7 +107,7 @@
 
   {#if past.length > 0}
     <section class="past-section">
-      <h2 class="section-heading">Past</h2>
+      <h2 class="section-heading">{t('Past')}</h2>
       <ul class="event-list past">
         {#each past as item (item.uri)}
           {@const ev = item.value}
