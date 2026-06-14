@@ -36,7 +36,7 @@ const de: Record<string, string> = {
   'Save changes': 'Änderungen speichern',
 
   'Meet real people. Build community. Without Big Tech.':
-    'Echte Menschen treffen. Gemeinschaft aufbauen. Ohne Big Tech.',
+    'Echte Menschen treffen. Community aufbauen. Ohne Big Tech.',
 
   'Sign in with your Atmosphere account. You can get one at {eurosky} or {bluesky}.':
     'Melde dich mit deinem Atmosphere-Konto an. Du kannst dir eines bei {eurosky} oder {bluesky} erstellen.',
