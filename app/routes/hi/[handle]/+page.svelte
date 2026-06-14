@@ -1,13 +1,11 @@
 <script lang="ts">
-  import { callXrpc } from '$hatk/client'
-  import { invalidateAll } from '$app/navigation'
   import { t } from '$lib/t'
   import { getLang } from '$lib/lang.svelte'
 
   let { data } = $props()
   const now = new Date()
   const upcoming = $derived(
-    (data.events ?? [])
+    ((data.events ?? []) as any[])
       .filter((item: any) => !item.value.startsAt || new Date(item.value.startsAt) >= now)
       .sort((a: any, b: any) => {
         if (!a.value.startsAt) return 1
@@ -16,37 +14,10 @@
       })
   )
   const past = $derived(
-    (data.events ?? [])
+    ((data.events ?? []) as any[])
       .filter((item: any) => item.value.startsAt && new Date(item.value.startsAt) < now)
       .sort((a: any, b: any) => new Date(b.value.startsAt).getTime() - new Date(a.value.startsAt).getTime())
   )
-  let confirmingDelete = $state<string | null>(null)
-  let error = $state('')
-  let copied = $state(false)
-
-  async function copyProfileLink() {
-    const url = `${data.siteUrl}/hi/${data.viewer?.handle}`
-    await navigator.clipboard.writeText(url)
-    copied = true
-    setTimeout(() => (copied = false), 2000)
-  }
-
-  function rkey(uri: string) {
-    return uri.split('/').pop()!
-  }
-
-  async function deleteEvent(uri: string) {
-    try {
-      await callXrpc('dev.hatk.deleteRecord', {
-        collection: 'community.lexicon.calendar.event',
-        rkey: rkey(uri),
-      })
-      confirmingDelete = null
-      await invalidateAll()
-    } catch (e: any) {
-      error = e.message
-    }
-  }
 
   function locationInfo(locations: any[] | undefined): { label: string; url: string } | null {
     if (!locations?.length) return null
@@ -92,75 +63,46 @@
 </script>
 
 <main>
-  <div class="toolbar">
-    <h1>{t('My events')}</h1>
-    <a href="/events/new"><button class="primary">{t('+ Create event')}</button></a>
-  </div>
-
-  {#if data.viewer?.handle}
-    <div class="share-bar">
-      <span class="share-hint">{t('Share your events with others')}</span>
-      <a class="share-link" href="/hi/{data.viewer.handle}">{data.siteUrl}/hi/{data.viewer.handle}</a>
-      <button class="btn-small" onclick={copyProfileLink}>
-        {copied ? t('Copied!') : t('Copy link')}
-      </button>
-    </div>
-  {/if}
-
-  {#if error}
-    <p class="form-error">{error}</p>
-  {/if}
+  <a href="/" class="back-link">{t('← Back')}</a>
+  <h1>@{data.handle}</h1>
 
   {#if upcoming.length === 0 && past.length === 0}
-    <p class="empty">{t("You haven't created any events yet.")}</p>
+    <p class="empty">{t('No events yet.')}</p>
   {/if}
-
-  {#snippet eventCard(item: any)}
-    {@const ev = item.value}
-    <li class="event-card">
-      <div class="event-header">
-        <strong class="event-name">{ev.name}</strong>
-        <div class="badges">
-          {#if ev.mode}
-            <span class="badge">{MODE_LABELS[ev.mode] ?? ev.mode}</span>
-          {/if}
-          {#if ev.status}
-            <span class="badge">{STATUS_LABELS[ev.status] ?? ev.status}</span>
-          {/if}
-        </div>
-      </div>
-      {#if ev.description}
-        <p class="event-description">{ev.description}</p>
-      {/if}
-      <div class="event-meta">
-        {#if ev.startsAt}
-          <span>{formatDateRange(ev.startsAt, ev.endsAt)}</span>
-        {/if}
-        {#if locationInfo(ev.locations)}
-          {@const loc = locationInfo(ev.locations)!}
-          <a class="event-location" href={loc.url} target="_blank" rel="noopener noreferrer">
-            📍 {loc.label}
-          </a>
-        {/if}
-      </div>
-      <div class="event-actions">
-        <a href="/events/{rkey(item.uri)}"><button>{t('Edit')}</button></a>
-        {#if confirmingDelete === item.uri}
-          <button class="danger" onclick={() => deleteEvent(item.uri)}>{t('Confirm delete')}</button>
-          <button onclick={() => confirmingDelete = null}>{t('Cancel')}</button>
-        {:else}
-          <button onclick={() => confirmingDelete = item.uri}>{t('Delete')}</button>
-        {/if}
-      </div>
-    </li>
-  {/snippet}
 
   {#if upcoming.length > 0}
     <section>
       <h2 class="section-heading">{t('Upcoming')}</h2>
       <ul class="event-list">
         {#each upcoming as item (item.uri)}
-          {@render eventCard(item)}
+          {@const ev = item.value}
+          <li class="event-card">
+            <div class="event-header">
+              <strong class="event-name">{ev.name}</strong>
+              <div class="badges">
+                {#if ev.mode}
+                  <span class="badge">{MODE_LABELS[ev.mode] ?? ev.mode}</span>
+                {/if}
+                {#if ev.status}
+                  <span class="badge">{STATUS_LABELS[ev.status] ?? ev.status}</span>
+                {/if}
+              </div>
+            </div>
+            {#if ev.description}
+              <p class="event-description">{ev.description}</p>
+            {/if}
+            <div class="event-meta">
+              {#if ev.startsAt}
+                <span>{formatDateRange(ev.startsAt, ev.endsAt)}</span>
+              {/if}
+              {#if locationInfo(ev.locations)}
+                {@const loc = locationInfo(ev.locations)!}
+                <a class="event-location" href={loc.url} target="_blank" rel="noopener noreferrer">
+                  📍 {loc.label}
+                </a>
+              {/if}
+            </div>
+          </li>
         {/each}
       </ul>
     </section>
@@ -171,7 +113,34 @@
       <h2 class="section-heading">{t('Past')}</h2>
       <ul class="event-list past">
         {#each past as item (item.uri)}
-          {@render eventCard(item)}
+          {@const ev = item.value}
+          <li class="event-card">
+            <div class="event-header">
+              <strong class="event-name">{ev.name}</strong>
+              <div class="badges">
+                {#if ev.mode}
+                  <span class="badge">{MODE_LABELS[ev.mode] ?? ev.mode}</span>
+                {/if}
+                {#if ev.status}
+                  <span class="badge">{STATUS_LABELS[ev.status] ?? ev.status}</span>
+                {/if}
+              </div>
+            </div>
+            {#if ev.description}
+              <p class="event-description">{ev.description}</p>
+            {/if}
+            <div class="event-meta">
+              {#if ev.startsAt}
+                <span>{formatDateRange(ev.startsAt, ev.endsAt)}</span>
+              {/if}
+              {#if locationInfo(ev.locations)}
+                {@const loc = locationInfo(ev.locations)!}
+                <a class="event-location" href={loc.url} target="_blank" rel="noopener noreferrer">
+                  📍 {loc.label}
+                </a>
+              {/if}
+            </div>
+          </li>
         {/each}
       </ul>
     </section>
@@ -185,34 +154,37 @@
     padding: 2.5rem 1.5rem;
   }
 
-  .toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.75rem;
-  }
-
-  @media (max-width: 600px) {
-    .toolbar {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.75rem;
-    }
+  .back-link {
+    font-size: 0.875rem;
+    color: var(--muted);
   }
 
   h1 {
     font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
+    margin-top: 1rem;
+    margin-bottom: 1.75rem;
   }
 
   .empty {
     color: var(--muted);
     font-size: 0.9375rem;
-    padding: 2rem 0;
+    padding: 3rem 0;
     text-align: center;
-    border: 1px dashed var(--border);
-    border-radius: var(--radius);
+  }
+
+  .section-heading {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 0.875rem;
+  }
+
+  .past-section {
+    margin-top: 2rem;
   }
 
   .event-list {
@@ -220,6 +192,14 @@
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
+  }
+
+  .event-list.past .event-card {
+    opacity: 0.6;
+  }
+
+  .event-list.past .event-card:hover {
+    opacity: 1;
   }
 
   .event-card {
@@ -290,70 +270,5 @@
   .event-location:hover {
     color: var(--accent);
     text-decoration: underline;
-  }
-
-  .event-actions {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 0.875rem;
-  }
-
-  .event-actions button {
-    font-size: 0.8125rem;
-    padding: 0.3rem 0.75rem;
-  }
-
-  button.danger {
-    color: #dc2626;
-    border-color: #fca5a5;
-  }
-
-  button.danger:hover:not(:disabled) {
-    background: #fef2f2;
-  }
-
-  .share-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.25rem;
-  }
-
-  .share-hint {
-    font-size: 0.875rem;
-    color: var(--muted);
-  }
-
-  .share-link {
-    font-size: 0.875rem;
-    color: var(--accent);
-    word-break: break-all;
-  }
-
-  .form-error {
-    margin-bottom: 1rem;
-    font-size: 0.875rem;
-    color: #dc2626;
-  }
-
-  .section-heading {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--muted);
-    margin-bottom: 0.875rem;
-  }
-
-  .past-section {
-    margin-top: 2rem;
-  }
-
-  .event-list.past .event-card {
-    opacity: 0.6;
-  }
-
-  .event-list.past .event-card:hover {
-    opacity: 1;
   }
 </style>

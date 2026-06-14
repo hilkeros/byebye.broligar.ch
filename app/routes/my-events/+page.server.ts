@@ -2,7 +2,7 @@ import { callXrpc } from '$hatk'
 import { redirect } from '@sveltejs/kit'
 import type { PageServerLoad } from './$types'
 
-export const load: PageServerLoad = async ({ parent }) => {
+export const load: PageServerLoad = async ({ parent, url }) => {
   const { viewer } = await parent()
   if (!viewer) throw redirect(302, '/')
 
@@ -15,5 +15,5 @@ export const load: PageServerLoad = async ({ parent }) => {
     item.uri?.startsWith(`at://${viewer.did}/`)
   )
 
-  return { events }
+  return { events, siteUrl: `${url.protocol}//${url.host}` }
 }

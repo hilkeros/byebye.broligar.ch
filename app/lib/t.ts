@@ -56,6 +56,10 @@ const de: Record<string, string> = {
   "I want this website to be shaped by our community. And if you stop liking what I do, I don't own your event data. You keep them and you can build something different with it on your own.":
     "Ich möchte, dass diese Website von unserer Community mitgestaltet wird. Und falls dir nicht mehr gefällt, was ich mache: Deine Veranstaltungsdaten gehören dir. Du behältst sie und kannst damit eigenständig etwas anderes aufbauen.",
 
+  'Share your events with others': 'Teile deine Veranstaltungen mit anderen',
+  'Copy link': 'Link kopieren',
+  'Copied!': 'Kopiert!',
+
   'In person': 'Vor Ort',
   'Virtual': 'Online',
   'Hybrid': 'Hybrid',
