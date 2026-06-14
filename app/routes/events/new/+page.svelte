@@ -241,6 +241,12 @@
     gap: 1rem;
   }
 
+  @media (max-width: 600px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+  }
+
   /* Location */
   .location-field {
     display: flex;

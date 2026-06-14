@@ -44,35 +44,60 @@
 </script>
 
 <nav>
-  <a href="/" class="site-title">bye bye broligarch</a>
+  <div class="nav-left">
+    <a href="/" class="site-title">bye bye broligarch</a>
+    <div class="nav-links desktop-only">
+      {#if viewer}
+        <a href="/my-events" class="nav-link">{t('My events')}</a>
+      {/if}
+      <a href="/about" class="nav-link">{t('About us')}</a>
+    </div>
+  </div>
   <img src="/broli_gocarts.png" alt="Broli go-karts" class="nav-logo" />
   <div class="nav-right">
-    {#if viewer}
-      <a href="/my-events" class="nav-link desktop-only">{t('My events')}</a>
-      <span class="viewer-handle desktop-only">@{viewer.handle}</span>
-      <button class="desktop-only" onclick={handleLogout}>{t('Sign out')}</button>
-      <button class="hamburger mobile-only" onclick={() => showMenu = !showMenu} aria-label="Menu">
-        {showMenu ? '✕' : '☰'}
-      </button>
-    {:else}
-      <button onclick={() => showLogin = !showLogin}>{t('Sign in')}</button>
-    {/if}
-    <select class="lang-switch" value={getLang()} onchange={switchLang}>
+    <select class="lang-switch desktop-only" value={getLang()} onchange={switchLang}>
       <option value="en">EN</option>
       <option value="de">DE</option>
     </select>
+    {#if viewer}
+      <div class="nav-account desktop-only">
+        <span class="viewer-handle">@{viewer.handle}</span>
+        <button class="btn-small" onclick={handleLogout}>{t('Sign out')}</button>
+      </div>
+    {:else}
+      <button class="desktop-only" onclick={() => showLogin = !showLogin}>{t('Sign in')}</button>
+    {/if}
+    <button class="hamburger mobile-only" onclick={() => showMenu = !showMenu} aria-label="Menu">
+      {showMenu ? '✕' : '☰'}
+    </button>
   </div>
-  {#if showMenu && viewer}
+  {#if showMenu}
     <div class="mobile-menu">
-      <a href="/my-events" class="mobile-menu-link" onclick={() => showMenu = false}>{t('My events')}</a>
-      <span class="mobile-menu-handle">@{viewer.handle}</span>
-      <button onclick={handleLogout}>{t('Sign out')}</button>
+      {#if viewer}
+        <a href="/my-events" class="mobile-menu-link" onclick={() => showMenu = false}>{t('My events')}</a>
+      {/if}
+      <a href="/about" class="mobile-menu-link" onclick={() => showMenu = false}>{t('About us')}</a>
+      <hr class="mobile-menu-divider" />
+      {#if viewer}
+        <span class="mobile-menu-handle">@{viewer.handle}</span>
+        <button onclick={handleLogout}>{t('Sign out')}</button>
+      {:else}
+        <button onclick={() => { showMenu = false; showLogin = true }}>{t('Sign in')}</button>
+      {/if}
+      <select class="lang-switch" value={getLang()} onchange={(e) => { switchLang(e); showMenu = false }}>
+        <option value="en">English</option>
+        <option value="de">Deutsch</option>
+      </select>
     </div>
   {/if}
 </nav>
 
 {#if showLogin && !viewer}
   <div class="login-bar">
+    <p class="login-hint">{@html t('Sign in with your Atmosphere account. You can get one at {eurosky} or {bluesky}.', {
+      eurosky: '<a href="https://eurosky.social" target="_blank" rel="noopener noreferrer">eurosky.social</a>',
+      bluesky: '<a href="https://bsky.app" target="_blank" rel="noopener noreferrer">Bluesky</a>',
+    })}</p>
     <form onsubmit={(e) => { e.preventDefault(); handleLogin() }} class="login-form">
       <input type="text" bind:value={handle} placeholder="your.handle" />
       <button type="submit" class="primary" disabled={loading}>
@@ -85,6 +110,8 @@
     {/if}
   </div>
 {/if}
+
+<div class="tagline">{t('Meet real people. Build community. Without Big Tech.')}</div>
 
 {@render children()}
 
@@ -122,10 +149,28 @@
     transform: translateX(-50%);
   }
 
+  .nav-left {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1rem;
+  }
+
   .nav-right {
     display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+  }
+
+  .nav-account {
+    display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
 
   .nav-link {
@@ -139,16 +184,21 @@
   }
 
   .viewer-handle {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: var(--muted);
   }
 
+  .btn-small {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+  }
+
   .lang-switch {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 700;
     font-family: var(--font);
     color: var(--muted);
-    padding: 0.25rem 0.375rem;
+    padding: 0.2rem 0.5rem;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--bg);
@@ -170,6 +220,7 @@
   .mobile-menu {
     display: none;
     flex-direction: column;
+    align-items: flex-start;
     gap: 0.75rem;
     padding: 1rem 1.5rem;
     background: var(--bg);
@@ -194,10 +245,39 @@
     color: var(--muted);
   }
 
+  .mobile-menu-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0.25rem 0;
+    width: 100%;
+  }
+
+  .mobile-menu button,
+  .mobile-menu select {
+    font-size: 0.875rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  .tagline {
+    text-align: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9375rem;
+    color: var(--muted);
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+
   .login-bar {
     padding: 0.75rem 1.5rem;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
+  }
+
+  .login-hint {
+    font-size: 0.875rem;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 0.75rem;
   }
 
   .login-form {

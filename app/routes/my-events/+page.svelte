@@ -174,6 +174,14 @@
     margin-bottom: 1.75rem;
   }
 
+  @media (max-width: 600px) {
+    .toolbar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+  }
+
   h1 {
     font-size: 1.5rem;
     font-weight: 700;
