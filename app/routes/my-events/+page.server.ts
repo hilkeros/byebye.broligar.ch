@@ -9,11 +9,8 @@ export const load: PageServerLoad = async ({ parent, url }) => {
   const result = await callXrpc('dev.hatk.getRecords', {
     collection: 'community.lexicon.calendar.event',
     limit: 100,
-  })
+    did: viewer.did,
+  } as any)
 
-  const events = (result.items as any[]).filter((item: any) =>
-    item.uri?.startsWith(`at://${viewer.did}/`)
-  )
-
-  return { events, siteUrl: `${url.protocol}//${url.host}` }
+  return { events: result.items as any[], siteUrl: `${url.protocol}//${url.host}` }
 }
