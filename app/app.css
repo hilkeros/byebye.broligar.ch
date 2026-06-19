@@ -10,13 +10,13 @@
   --font: 'Nunito', system-ui, sans-serif;
   --font-display: 'Boogaloo', system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", monospace;
-  --bg: #fffcf0;
+  --bg: #fff0f0;
   --text: #1d2b3a;
-  --muted: #7a6f63;
-  --border: #e8dcc8;
-  --accent: #3a7fe8;
-  --accent-hover: #2563c7;
-  --surface: #fff8e6;
+  --muted: #5e5550;
+  --border: #e8dff8;
+  --accent: #6063c8;
+  --accent-hover: #4245a0;
+  --surface: #fee8f6;
   --radius: 14px;
 }
 
