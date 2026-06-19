@@ -56,6 +56,15 @@ const de: Record<string, string> = {
   "I want this website to be shaped by our community. And if you stop liking what I do, I don't own your event data. You keep them and you can build something different with it on your own.":
     "Ich möchte, dass diese Website von unserer Community mitgestaltet wird. Und falls dir nicht mehr gefällt, was ich mache: Deine Veranstaltungsdaten gehören dir. Du behältst sie und kannst damit eigenständig etwas anderes aufbauen.",
 
+  'Admin': 'Admin',
+  'Curated accounts': 'Kuratierte Accounts',
+  'Events from these accounts appear on the home page.': 'Veranstaltungen dieser Accounts erscheinen auf der Startseite.',
+  'Add account': 'Account hinzufügen',
+  'Add': 'Hinzufügen',
+  'No accounts yet.': 'Noch keine Accounts.',
+  'Accounts': 'Accounts',
+  'Remove': 'Entfernen',
+
   'Share your events with others': 'Teile deine Veranstaltungen mit anderen',
   'Copy link': 'Link kopieren',
   'Copied!': 'Kopiert!',

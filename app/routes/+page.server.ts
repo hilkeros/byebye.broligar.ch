@@ -1,16 +1,21 @@
 import { callXrpc } from '$hatk'
+import { getCuratedAccounts } from '$lib/server/curated'
 import type { PageServerLoad } from './$types'
-import { env } from '$env/dynamic/private'
 
 export const load: PageServerLoad = async () => {
-  const adminDid = env.ADMIN_DID
-  if (!adminDid) return { events: [] }
+  const accounts = getCuratedAccounts()
+  if (accounts.length === 0) return { events: [] }
 
-  const result = await callXrpc('dev.hatk.getRecords', {
-    collection: 'community.lexicon.calendar.event',
-    limit: 100,
-    did: adminDid,
-  } as any)
+  const results = await Promise.all(
+    accounts.map((account) =>
+      callXrpc('dev.hatk.getRecords', {
+        collection: 'community.lexicon.calendar.event',
+        limit: 100,
+        did: account.did,
+      } as any)
+    )
+  )
 
-  return { events: result.items as any[] }
+  const events = results.flatMap((r) => r.items as any[])
+  return { events }
 }

@@ -7,6 +7,7 @@
 
   let { children, data } = $props()
   const viewer = $derived(data.viewer)
+  const isAdmin = $derived(data.isAdmin)
 
   // Keep lang in sync with server-provided value (e.g. on first load)
   $effect(() => { setLang(data.lang as 'en' | 'de') })
@@ -50,6 +51,9 @@
       {#if viewer}
         <a href="/my-events" class="nav-link">{t('My events')}</a>
       {/if}
+      {#if isAdmin}
+        <a href="/manage" class="nav-link">{t('Admin')}</a>
+      {/if}
       <a href="/about" class="nav-link">{t('About us')}</a>
     </div>
   </div>
@@ -75,6 +79,9 @@
     <div class="mobile-menu">
       {#if viewer}
         <a href="/my-events" class="mobile-menu-link" onclick={() => showMenu = false}>{t('My events')}</a>
+      {/if}
+      {#if isAdmin}
+        <a href="/manage" class="mobile-menu-link" onclick={() => showMenu = false}>{t('Admin')}</a>
       {/if}
       <a href="/about" class="mobile-menu-link" onclick={() => showMenu = false}>{t('About us')}</a>
       <hr class="mobile-menu-divider" />
